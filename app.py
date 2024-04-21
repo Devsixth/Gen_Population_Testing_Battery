@@ -23,16 +23,18 @@ def main():
     data = load_data(file_path)
 
     # Select search option
-    select_option = st.sidebar.selectbox('Select search option:', ['Name', 'Phone Number'])
+    select_option = st.sidebar.radio('Select search option:', ['Name', 'Phone Number'])
 
     if select_option == 'Name':
         names = data['Name'].unique()
-        selected_name = st.sidebar.selectbox('Select name:', names)
-        display_user_details(selected_name, data)
+        selected_name = st.sidebar.multiselect('Select name:', names)
+        for name in selected_name:
+            display_user_details(name, data)
     else:
         phone_numbers = data['MobNo'].unique()
-        selected_phone = st.sidebar.selectbox('Select phone number:', phone_numbers)
-        display_user_details(selected_phone, data)
+        selected_phone = st.sidebar.multiselect('Select phone number:', phone_numbers)
+        for phone in selected_phone:
+            display_user_details(phone, data)
 
 if __name__ == "__main__":
     main()
