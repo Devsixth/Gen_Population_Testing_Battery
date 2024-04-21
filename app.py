@@ -657,7 +657,57 @@ def main():
         save_data(updated_data, file_path)
         st.success("Marks saved successfully!")
 
-        
+        col1.empty()
+        col2.empty()
+
+        st.subheader('Calculated Results')
+
+        # Split the display into two columns
+        col1, col2 = st.columns(2)
+
+        # Display results in the first column
+        with col1:
+            if select_option == 'Name':
+                st.write("TS1:",
+                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS1'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts1_C'].iloc[0]}")
+                st.write("TS2:",
+                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS2'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts2_C'].iloc[0]}")
+                st.write("TS3:",
+                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS3'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts3_C'].iloc[0]}")
+            else:
+                st.write("TS1:",
+                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS1'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts1_C'].iloc[0]}")
+                st.write("TS2:",
+                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS2'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts2_C'].iloc[0]}")
+                st.write("TS3:",
+                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS3'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts3_C'].iloc[0]}")
+
+        # Display results in the second column
+        with col2:
+            if select_option == 'Name':
+                st.write("TS4:",
+                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS4'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts4_C'].iloc[0]}")
+                st.write("TS5:",
+                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS5'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts5_C'].iloc[0]}")
+                if test_type == 'Beginner':
+                    st.write("BTS6:",
+                             f"{updated_data.loc[updated_data['Name'] == selected_name, 'BTS6'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'bts6_C'].iloc[0]}")
+                else:
+                    st.write("NBTS6:",
+                             f"{updated_data.loc[updated_data['Name'] == selected_name, 'NBTS6'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'nbts6_C'].iloc[0]}")
+            else:
+                st.write("TS4:",
+                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS4'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts4_C'].iloc[0]}")
+                st.write("TS5:",
+                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS5'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts5_C'].iloc[0]}")
+                if test_type == 'Beginner':
+                    st.write("BTS6:",
+                             f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'BTS6'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'bts6_C'].iloc[0]}")
+                else:
+                    st.write("NBTS6:",
+                             f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'NBTS6'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'nbts6_C'].iloc[0]}")
+
+
 if __name__ == "__main__":
     main()
 
