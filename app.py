@@ -15,12 +15,12 @@ def display_user_details(user_id, data):
     user_details = data[data['Name'] == user_id] if user_id in data['Name'].values else data[data['MobNo'] == user_id]
     user_details = user_details[['Name', 'MobNo', 'BorNB', "Age", "Gender"]]
     st.write(user_details)
+
 def main():
     st.title('Gen Population Testing Battery')
 
     file_path = 'C:/Users/Admin/Desktop/gen/SimData - SimData.csv'
     data = load_data(file_path)
-
 
     # Select search option
     select_option = st.sidebar.selectbox('Select search option:', ['Name', 'Phone Number'])
