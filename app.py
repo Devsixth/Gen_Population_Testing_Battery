@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-@st.cache(allow_output_mutation=True)
+
 def load_data(file_path):
     try:
         data = pd.read_csv(file_path)
@@ -27,7 +27,7 @@ def main():
 
     if select_option == 'Name':
         names = data['Name'].unique()
-        selected_name = st.sidebar.selectbox('Select name:', names)
+        selected_name = st.sidebar.selectbox('Select name:', options=names, default=names, key="n")
         display_user_details(selected_name, data)
     else:
         phone_numbers = data['MobNo'].unique()
