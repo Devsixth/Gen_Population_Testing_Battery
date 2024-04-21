@@ -12,7 +12,7 @@ def load_data(file_path):
 def main():
     st.title('Select Name from CSV')
 
-    file_path = 'C:/Users/Admin/Desktop/gen/SimData - SimData.csv'  # Update with your CSV file path
+    file_path = 'SimData - SimData.csv'  # Update with your CSV file path
     data = load_data(file_path)
 
     selected_name = st.selectbox('Select Name:', data['Name'].unique())
