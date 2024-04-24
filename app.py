@@ -1,5 +1,93 @@
 import streamlit as st
 import pandas as pd
+def ts1_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment results show average levels of body fat percentage, indicating a moderate risk of reduced metabolic rate and potential for chronic diseases. Mitigation strategies include balanced nutrition, regular exercise, adequate rest and lifestyle modifications are crucial for maintaining optimal health and well-being."
+    elif row == "Below Average":
+        return "The Assessment results show below average levels of body fat percentage, posing risks such as hormonal imbalances or metabolic disorders and nutrient deficiencies. Mitigating actions include adopting a balanced diet, engaging in regular exercise, prioritizing rest. Sustainable lifestyle changes are essential to improve overall health."
+def ts2_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment scores show Average score for sit and reach indicating a basic level of flexibility, but continuous efforts to improve flexibility are essential for preventing future musculoskeletal problems. Proactive steps can lead to increased flexibility, reduced discomfort, optimized physical performance, and long-term musculoskeletal well-being.The Assessment scores show Average score for sit and reach indicating a basic level of flexibility, but continuous efforts to improve flexibility are essential for preventing future musculoskeletal problems. Proactive steps can lead to increased flexibility, reduced discomfort, optimized physical performance, and long-term musculoskeletal well-being."
+    elif row == "Below Average":
+        return "The Assessment scores show Average score for sit and reach indicating potential risk factors including reduced flexibility leading to musculoskeletal issues such as lower back pain, limited range of motion, and impaired functional abilities (muscle loss) during daily activities. Targeted interventions are essential to prevent any dysfunctions and injuries."
+def ts3_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment shows moderate levels of handgrip strength suggesting moderate musculoskeletal function, neural drive, and overall upper body muscular strength. To enhance grip strength and prevent age-related decline, mitigation strategies involve consistent resistance training and improve overall physical activity."
+    elif row == "Below Average":
+        return "The Assessment shows below average levels of hand grip strength , indicating potential weaknesses in musculoskeletal function and neural drive. To enhance grip strength and prevent age-related decline, mitigation strategies involve consistent resistance training and improve overall physical activity Vigilant monitoring and strict adherence to these interventions are crucial to mitigate deficiencies in hand grip strength and uphold musculoskeletal well-being."
+def ts4_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment shows average scores for 1 Min Squat test indicating Average levels of lower body strength suggesting moderate level of fitness(reduced strength and endurance, impacting daily activities) Proactive steps will improve lower body strength, reduce injury risks, and enhance overall physical performance for better quality of life."
+    elif row == "Below Average":
+        return "The Assessment shows below average scores for 1 Min Squat test indicating significant fitness implications such as musculoskeletal injuries, functional limitations, and decreased ability to perform routine tasks. Proactive intervention is vital to mitigate these risks and improve overall physical resilience and quality of life"
+def ts5_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment shows average test results for 3 Min Step Test indicating average levels of cardiovascular endurance, posing a moderate risk for cardiovascular disease and reduced physical stamina. Initiate a structured exercise regimen incorporating aerobic activities, strength training, and a balanced diet to improve cardiovascular health and mitigate associated risks. Adopting these lifestyle modifications can lower cardiovascular risks, increase energy levels, and improve overall quality of life by enhancing endurance and physical performance."
+    elif row == "Below Average":
+        return "The Assessment shows below average test results for 3 Min Step Test indicating low cardiovascular endurance, highlighting increased risks of cardiovascular disease and diminished physical fitness. Initiate a tailored exercise program focusing on aerobic exercises, strength training, and a balanced diet to enhance cardiovascular fitness and address associated health concerns."
+def bts6_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment shows average performance in the Stork Balance Test, suggesting moderate balance and proprioceptive ability. Mitigation strategies should involve regular balance exercises, maintaining proper footwear to enhance balance and reduce risk of fall"
+    elif row == "Below Average":
+        return "The Assessment shows below average performance in the Stork Balance Test, indicating potential deficits in balance and proprioceptive ability which indicates high risk of fall. Targeted interventions such as balance exercises will improve stability, decrease likelihood of falls, and enhance functional mobility."
+
+def nbts6_rec(row):
+    if row == "Above Average":
+        return "---"
+    elif row == "Average":
+        return "The Assessment shows average performance in the 1-minute sit-up test, indicating moderate core strength and endurance. Interventions should involve implementing targeted core-strengthening exercises, adopting a nutritious diet, and increasing overall physical activity. These interventions will enhance core stability, reduce risk of lower back pain, and improve functional mobility."
+    elif row == "Below Average":
+        return "The Assessment shows average performance in the 1-minute sit-up test, indicating potential weaknesses in core strength and endurance. Interventions should involve implementing targeted core-strengthening exercises, adopting a nutritious diet, and increasing overall physical activity. These measures offer benefits such as improved core stability, decreased risk of lower back discomfort, and enhanced functional mobility."
+
+
+
+# Function to calculate Fitness Quotient (FQ)
+def calculate_fq(row):
+    if pd.isna(row['AA']):
+        return "Data missing"
+    if row['AA'] == 6 or row['AA'] == 5:
+        return 'VERY GOOD'
+    elif row['AA'] == 4 or (row['AA'] == 3 and row['A'] > 0):
+        return 'GOOD'
+    elif (row['AA'] == 3 and row['A'] == 0) or \
+         (row['AA'] == 2) or \
+         (row['AA'] == 1 and row['BA'] == 0):
+        return 'MODERATE'
+    elif (row['AA'] == 1 and row['BA'] > 0) or \
+         (row['AA'] == 0 and row['A'] > 1):
+        return 'POOR'
+    elif row['AA'] == 0 and row['A'] <= 1:
+        return 'VERY POOR'
+    else:
+        return 'UNKNOWN'
+
+# Function to calculate recommendation based on FQ
+def calculate_recommendation(fq):
+    if fq == 'VERY GOOD':
+        return "The Assessment results show a high Fitness Quotient indicating better Quality of Life which results in reduced susceptibility to injuries and ability to perform routine activities with minimal pain to no pain. Stay physically active to maintain the same."
+    elif fq == 'GOOD':
+        return "The Assessment results demonstrate a good Fitness Quotient, reflecting a satisfactory level of quality of life. There are areas for improvement that can reduce the susceptibility of injury occurrence and optimise your Fitness Quotient. Consult with an Exercise Scientist."
+    elif fq == 'MODERATE':
+        return "The Assessment indicates a moderate Fitness Quotient, highlighting potential injury risks and physical discomfort. Urgent intervention is necessary to mitigate these risks effectively."
+    elif fq == 'POOR':
+        return "The Assessment results indicate a concerning decrease in the Fitness Quotient, signifying an elevated risk of injury and a notable deterioration in quality of life. Immediate attention and intervention are essential."
+    elif fq == 'VERY POOR':
+        return "The Assessment results reveal a significantly deficient Fitness Quotient, suggesting an increased risk of injury and a notable compromise in quality of life. Immediate attention and intervention are warranted."
+    else:
+        return "Fitness Quotient calculation unknown."
+
 
 
 def ts1(TS1, Gender, Age):
@@ -597,30 +685,29 @@ def update_user_marks(user_id, data, marks):
             data.at[i, 'NBTS6'] = marks['NBTS6']
 
     # Apply score calculation functions
-    data['ts1_C'] = data.apply(lambda row: ts1(row['TS1'], row['Gender'], row['Age']), axis=1)
-    data['ts2_C'] = data.apply(lambda row: ts2(row['TS2'], row['Gender'], row['Age']), axis=1)
-    data['ts3_C'] = data.apply(lambda row: ts3(row['TS3'], row['Gender'], row['Age']), axis=1)
-    data['ts4_C'] = data.apply(lambda row: ts4(row['TS4'], row['Gender']), axis=1)
-    data['ts5_C'] = data.apply(lambda row: ts5(row['TS5'], row['Gender'], row['Age']), axis=1)
-    data['bts6_C'] = data.apply(lambda row: bts6(row['BTS6']) if 'BTS6' in row else None, axis=1)
-    data['nbts6_C'] = data.apply(lambda row: nbts6(row['NBTS6'], row['Gender'], row['Age']) if 'NBTS6' in row else None, axis=1)
+    data['ts1_C'] = data.apply(lambda fq: ts1(fq['TS1'], fq['Gender'], fq['Age']), axis=1)
+    data['ts2_C'] = data.apply(lambda fq: ts2(fq['TS2'], fq['Gender'], fq['Age']), axis=1)
+    data['ts3_C'] = data.apply(lambda fq: ts3(fq['TS3'], fq['Gender'], fq['Age']), axis=1)
+    data['ts4_C'] = data.apply(lambda fq: ts4(fq['TS4'], fq['Gender']), axis=1)
+    data['ts5_C'] = data.apply(lambda fq: ts5(fq['TS5'], fq['Gender'], fq['Age']), axis=1)
+    data['bts6_C'] = data.apply(lambda fq: bts6(fq['BTS6']) if 'BTS6' in fq else None, axis=1)
+    data['nbts6_C'] = data.apply(lambda fq: nbts6(fq['NBTS6'], fq['Gender'], fq['Age']) if 'NBTS6' in fq else None, axis=1)
 
     return data
 
-def calculate_counts(row):
-    below_average_count = sum(x == "Below Average" for x in row[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
-    average_count = sum(x == "Average" for x in row[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
-    above_average_count = sum(x == "Above Average" for x in row[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
+def calculate_counts(fq):
+    below_average_count = sum(x == "Below Average" for x in fq[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
+    average_count = sum(x == "Average" for x in fq[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
+    above_average_count = sum(x == "Above Average" for x in fq[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
     return below_average_count, average_count, above_average_count
+
 
 def main():
     st.title('Gen Population Testing Battery')
 
-    file_path = 'SimData - SimData.csv'
+    file_path = 'C:/Users/Admin/Desktop/gen/SimData - SimData.csv'
     data = load_data(file_path)
 
-
-    # Select search option
     select_option = st.sidebar.selectbox('Select search option:', ['Name', 'Phone Number'])
 
     if select_option == 'Name':
@@ -635,6 +722,7 @@ def main():
     st.header('Update Marks')
     marks = {}
     test_type = st.radio('Select test type:', ['Beginner', 'Non Beginner'])
+    selected_date = st.date_input("Select a date")
     col1, col2 = st.columns(2)
     marks['TS1'] = col1.number_input('Enter TS1:', value=0)
     marks['TS2'] = col1.number_input('Enter TS2:', value=0)
@@ -646,68 +734,58 @@ def main():
     else:
         marks['NBTS6'] = col2.number_input('Enter NBTS6:', value=0)
 
-    update_marks_button = st.button('Update Marks')
+    update_marks_button = st.button('Update')
     if update_marks_button:
         if select_option == 'Name':
             updated_data = update_user_marks(selected_name, data, marks)
         else:
             updated_data = update_user_marks(selected_phone, data, marks)
-
+        #selected_date = st.date_input("Select a date")
+        updated_data['Date'] = selected_date
         updated_data['BA'], updated_data['A'], updated_data['AA'] = zip(*updated_data.apply(calculate_counts, axis=1))
-        save_data(updated_data, file_path)
-        st.success("Marks saved successfully!")
+        updated_data['FQ'] = updated_data.apply(calculate_fq, axis=1)
+        updated_data['Recommendation'] = updated_data['FQ'].apply(calculate_recommendation)
+        updated_data['ts1_rec'] = updated_data['ts1_C'].apply(ts1_rec)
+        updated_data['ts2_rec'] = updated_data['ts2_C'].apply(ts2_rec)
+        updated_data['ts3_rec'] = updated_data['ts3_C'].apply(ts3_rec)
+        updated_data['ts4_rec'] = updated_data['ts4_C'].apply(ts4_rec)
+        updated_data['ts5_rec'] = updated_data['ts5_C'].apply(ts5_rec)
+        updated_data['bts6_rec'] = updated_data['bts6_C'].apply(bts6_rec)
+        updated_data['nbts6_rec'] = updated_data['nbts6_C'].apply(nbts6_rec)
 
-        col1.empty()
-        col2.empty()
+        save_data(updated_data, file_path)
+        st.success("Saved successfully!")
+
 
         st.subheader('Calculated Results')
 
-        # Split the display into two columns
-        col1, col2 = st.columns(2)
+        if select_option == 'Name':
+            selected_data = updated_data.loc[updated_data['Name'] == selected_name]
+        else:
+            selected_data = updated_data.loc[updated_data['MobNo'] == selected_phone]
 
-        # Display results in the first column
-        with col1:
-            if select_option == 'Name':
-                st.write("TS1:",
-                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS1'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts1_C'].iloc[0]}")
-                st.write("TS2:",
-                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS2'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts2_C'].iloc[0]}")
-                st.write("TS3:",
-                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS3'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts3_C'].iloc[0]}")
-            else:
-                st.write("TS1:",
-                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS1'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts1_C'].iloc[0]}")
-                st.write("TS2:",
-                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS2'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts2_C'].iloc[0]}")
-                st.write("TS3:",
-                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS3'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts3_C'].iloc[0]}")
+        results_df = pd.DataFrame({
+            'Test': ['TS1', 'TS2', 'TS3', 'TS4', 'TS5', 'BTS6' if test_type == 'Beginner' else 'NBTS6'],
 
-        # Display results in the second column
-        with col2:
-            if select_option == 'Name':
-                st.write("TS4:",
-                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS4'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts4_C'].iloc[0]}")
-                st.write("TS5:",
-                         f"{updated_data.loc[updated_data['Name'] == selected_name, 'TS5'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'ts5_C'].iloc[0]}")
-                if test_type == 'Beginner':
-                    st.write("BTS6:",
-                             f"{updated_data.loc[updated_data['Name'] == selected_name, 'BTS6'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'bts6_C'].iloc[0]}")
-                else:
-                    st.write("NBTS6:",
-                             f"{updated_data.loc[updated_data['Name'] == selected_name, 'NBTS6'].iloc[0]} {updated_data.loc[updated_data['Name'] == selected_name, 'nbts6_C'].iloc[0]}")
-            else:
-                st.write("TS4:",
-                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS4'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts4_C'].iloc[0]}")
-                st.write("TS5:",
-                         f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'TS5'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'ts5_C'].iloc[0]}")
-                if test_type == 'Beginner':
-                    st.write("BTS6:",
-                             f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'BTS6'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'bts6_C'].iloc[0]}")
-                else:
-                    st.write("NBTS6:",
-                             f"{updated_data.loc[updated_data['MobNo'] == selected_phone, 'NBTS6'].iloc[0]} {updated_data.loc[updated_data['MobNo'] == selected_phone, 'nbts6_C'].iloc[0]}")
+            'Status': selected_data[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C',
+                                       'bts6_C' if test_type == 'Beginner' else 'nbts6_C']].values.flatten(),
+            'Recommendation': selected_data[['ts1_rec', 'ts2_rec', 'ts3_rec', 'ts4_rec', 'ts5_rec',
+                                             'bts6_rec' if test_type == 'Beginner' else 'nbts6_rec']].values.flatten()
+        })
+
+        st.table(results_df)
+
+        st.subheader('Overall')
+        st.subheader("Status")
+        st.write(selected_data['FQ'].iloc[0])
+        st.subheader("Recommendation")
+        st.write(selected_data['Recommendation'].iloc[0])
+        st.subheader('Referral Statement')
+        st.write(
+            "Refer to a Sports and Exercise Science Practitioner to improve your Fitness Quotient and for targeted interventions immediately")
 
 
 if __name__ == "__main__":
     main()
+
 
