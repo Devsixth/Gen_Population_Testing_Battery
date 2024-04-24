@@ -651,9 +651,13 @@ def nbts6(NBTS6, Gender, Age):
 @st.cache(allow_output_mutation=True)
 def load_data(file_path):
     try:
-        df = pd.read_csv(file_path)
+        df = pd.read_csv(file_path, dtype={'MobNo': str})  # Set MobNo column as string dtype
     except FileNotFoundError:
         df = pd.DataFrame(columns=['Name', 'MobNo', 'BorNB', 'Age', 'Gender', 'TS1', 'TS2', 'TS3', 'TS4', 'TS5', 'BTS6', 'NBTS6'])
+
+    # Set display format for floats to prevent commas in strings
+    pd.options.display.float_format = '{:.0f}'.format
+
     return df
 
 def save_data(df, file_path):
@@ -662,9 +666,19 @@ def save_data(df, file_path):
 
 # Function to display user details
 def display_user_details(user_id, data):
+    # Save current display format for floats
+    current_float_format = pd.options.display.float_format
+
+    # Temporarily set display format for floats to prevent commas in strings
+    pd.options.display.float_format = '{:.0f}'.format
+
     user_details = data[data['Name'] == user_id] if user_id in data['Name'].values else data[data['MobNo'] == user_id]
+    user_details['MobNo'] = user_details['MobNo'].astype(str).unique()  # Convert MobNo to string
     user_details = user_details[['Name', 'MobNo', 'BorNB', "Age", "Gender"]]
     st.write(user_details)
+
+    # Reset display format for floats to the previous one
+    pd.options.display.float_format = current_float_format
 
 
 # Function to update user marks
@@ -701,7 +715,6 @@ def calculate_counts(fq):
     above_average_count = sum(x == "Above Average" for x in fq[['ts1_C', 'ts2_C', 'ts3_C', 'ts4_C', 'ts5_C', 'bts6_C', 'nbts6_C']])
     return below_average_count, average_count, above_average_count
 
-
 def main():
     st.title('Gen Population Testing Battery')
 
@@ -715,7 +728,7 @@ def main():
         selected_name = st.sidebar.selectbox('Select name:', names)
         display_user_details(selected_name, data)
     else:
-        phone_numbers = data['MobNo'].unique()
+        phone_numbers = data['MobNo'].astype(str).unique()  # Convert MobNo to string
         selected_phone = st.sidebar.selectbox('Select phone number:', phone_numbers)
         display_user_details(selected_phone, data)
 
@@ -740,7 +753,6 @@ def main():
             updated_data = update_user_marks(selected_name, data, marks)
         else:
             updated_data = update_user_marks(selected_phone, data, marks)
-        #selected_date = st.date_input("Select a date")
         updated_data['Date'] = selected_date
         updated_data['BA'], updated_data['A'], updated_data['AA'] = zip(*updated_data.apply(calculate_counts, axis=1))
         updated_data['FQ'] = updated_data.apply(calculate_fq, axis=1)
@@ -756,13 +768,12 @@ def main():
         save_data(updated_data, file_path)
         st.success("Saved successfully!")
 
-
         st.subheader('Calculated Results')
 
         if select_option == 'Name':
             selected_data = updated_data.loc[updated_data['Name'] == selected_name]
         else:
-            selected_data = updated_data.loc[updated_data['MobNo'] == selected_phone]
+            selected_data = updated_data.loc[updated_data['MobNo'].astype(str) == selected_phone]
 
         results_df = pd.DataFrame({
             'Test': ['TS1', 'TS2', 'TS3', 'TS4', 'TS5', 'BTS6' if test_type == 'Beginner' else 'NBTS6'],
@@ -784,8 +795,5 @@ def main():
         st.write(
             "Refer to a Sports and Exercise Science Practitioner to improve your Fitness Quotient and for targeted interventions immediately")
 
-
 if __name__ == "__main__":
     main()
-
-
