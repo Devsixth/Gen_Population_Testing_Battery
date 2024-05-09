@@ -72,7 +72,17 @@ def calculate_fq(row):
         return 'VERY POOR'
     else:
         return 'UNKNOWN'
-
+def calculate_grade(fq_value):
+    if fq_value == 'VERY POOR':
+        return 1
+    elif fq_value == 'POOR':
+        return 2
+    elif fq_value == 'MODERATE':
+        return 3
+    elif fq_value == 'GOOD':
+        return 4
+    elif fq_value == 'VERY GOOD':
+        return 5
 # Function to calculate recommendation based on FQ
 def calculate_recommendation(fq):
     if fq == 'VERY GOOD':
@@ -718,7 +728,7 @@ def calculate_counts(fq):
 def main():
     st.title('Gen Population Testing Battery')
 
-    file_path = 'SimData - SimData.csv'
+    file_path = 'C:/Users/Admin/Desktop/gen/SimData - SimData.csv'
     data = load_data(file_path)
 
     select_option = st.sidebar.selectbox('Select search option:', ['Name', 'Phone Number'])
@@ -756,6 +766,7 @@ def main():
         updated_data['Date'] = selected_date
         updated_data['BA'], updated_data['A'], updated_data['AA'] = zip(*updated_data.apply(calculate_counts, axis=1))
         updated_data['FQ'] = updated_data.apply(calculate_fq, axis=1)
+        updated_data['FQ_Numeric'] = updated_data['FQ'].apply(calculate_grade)
         updated_data['Recommendation'] = updated_data['FQ'].apply(calculate_recommendation)
         updated_data['ts1_rec'] = updated_data['ts1_C'].apply(ts1_rec)
         updated_data['ts2_rec'] = updated_data['ts2_C'].apply(ts2_rec)
