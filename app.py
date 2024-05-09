@@ -728,7 +728,7 @@ def calculate_counts(fq):
 def main():
     st.title('Gen Population Testing Battery')
 
-    file_path = 'C:/Users/Admin/Desktop/gen/SimData - SimData.csv'
+    file_path = 'SimData - SimData.csv'
     data = load_data(file_path)
 
     select_option = st.sidebar.selectbox('Select search option:', ['Name', 'Phone Number'])
