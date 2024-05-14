@@ -1,0 +1,101 @@
+---
+title: "MOVEMENT LAB"
+format: pdf
+editor: visual
+---
+
+![](images/Logo.jpg){fig-align="center" width="168"}
+
+```{r setup, include=FALSE}
+# Load necessary libraries
+library(readr)
+
+# Load data from CSV
+data <- read_csv("C:/Users/Admin/Desktop/gen/SimData - SimData.csv")
+```
+
+# Comprehensive Physical Assessment
+
+-   **Name:** `r data$Name[1]`
+-   **Age:** `r data$Age[1]`
+-   **Gender:** `r data$Gender[1]`
+-   **Date of Assessment:** `r data$Date[1]`
+
+## Assessment Results
+
+| Test Name           | Status                                                                                                               |
+|-------------------|-----------------------------------------------------|
+| Percentage Body Fat | `r data$ts1_C[1]`                                                                                                    |
+| Sit and Reach       | `r data$ts2_C[1]`                                                                                                    |
+| Handgrip Strength   | `r data$ts3_C[1]`                                                                                                    |
+| 1 min Squat test    | `r data$ts4_C[1]`                                                                                                    |
+| 3 Min Step Test     | `r data$ts5_C[1]`                                                                                                    |
+| Standing Stork Test | `r ifelse("bts6_C" %in% colnames(data), data$bts6_C[1], ifelse("nbts6_C" %in% colnames(data), data$nbts6_C[1], ""))` |
+
+## Recommendations
+| Test Name                                                                                                                                                                                        | Recommendation                                                                                                                                                                          |
+|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `r if (data$ts1_rec[1] != "---") "Percentage Body Fat" else ""`                                                                                                                                  | `r ifelse(data$ts1_rec[1] != "---", data$ts1_rec[1], "")`                                                                                                                               |
+| `r if (data$ts2_rec[1] != "---") "Sit and Reach" else ""`                                                                                                                                        | `r ifelse(data$ts2_rec[1] != "---", data$ts2_rec[1], "")`                                                                                                                               |
+| `r if (data$ts3_rec[1] != "---") "Handgrip Strength" else ""`                                                                                                                                    | `r ifelse(data$ts3_rec[1] != "---", data$ts3_rec[1], "")`                                                                                                                               |
+| `r if (data$ts4_rec[1] != "---") "1 min Squat test" else ""`                                                                                                                                     | `r ifelse(data$ts4_rec[1] != "---", data$ts4_rec[1], "")`                                                                                                                               |
+| `r if (data$ts5_rec[1] != "---") "3 Min Step Test" else ""`                                                                                                                                      | `r ifelse(data$ts5_rec[1] != "---", data$ts5_rec[1], "")`                                                                                                                               |
+| `r if ("bts6_rec" %in% colnames(data) && !is.na(data$bts6_rec[1]) && data$bts6_rec[1] != "---") "Standing Stork Test" else if ("nbts6_rec" %in% colnames(data) && !is.na(data$nbts6_rec[1]) && data$nbts6_rec[1] != "---") "Standing Stork Test" else ""` | `r ifelse("bts6_rec" %in% colnames(data) && !is.na(data$bts6_rec[1]) && data$bts6_rec[1] != "---", data$bts6_rec[1], ifelse("nbts6_rec" %in% colnames(data) && !is.na(data$nbts6_rec[1]) && data$nbts6_rec[1] != "---", data$nbts6_rec[1], ""))` |
+
+
+
+```{r ,include=TRUE,warning=FALSE,message=FALSE,echo=FALSE,comment=""}
+gg.gauge <- function(pos, breaks=c(0,4/3,8/3,11/3,15/3,20.7/3)) {
+  require(ggplot2)
+  library(dplyr)
+  get.poly <- function(a, b, r1=0.75, r2=1.0) {
+    th.start <- pi * (1 - a / 7)
+    th.end   <- pi * (1 - b / 7)
+    th       <- seq(th.start, th.end, length.out = 100) # Adjust length for smoother curve
+    x        <- c(r1 * cos(th), rev(r2 * cos(th)))
+    y        <- c(r1 * sin(th), rev(r2 * sin(th)))
+    return(data.frame(x, y))
+  }
+  
+  needle_size <- 0.1 # Adjust needle size here
+  
+  ggplot() +
+    geom_polygon(data = get.poly(breaks[1], breaks[2]), aes(x, y), fill = "darkred") +
+    geom_polygon(data = get.poly(breaks[2], breaks[3]), aes(x, y), fill = "red") +
+    geom_polygon(data = get.poly(breaks[3], breaks[4]), aes(x, y), fill = "gold") +
+    geom_polygon(data = get.poly(breaks[4], breaks[5]), aes(x, y), fill = "green") +
+    geom_polygon(data = get.poly(breaks[5], breaks[6]), aes(x, y), fill = "forestgreen") +
+    geom_polygon(data = get.poly(pos - needle_size, pos + needle_size, 0.1), aes(x, y)) +
+    annotate("text", x = 0, y = 0, label = pos, vjust = 0, size = 4, fontface = "bold") +
+    coord_fixed() +
+    theme_bw() +
+    theme(axis.text = element_blank(),
+          axis.title = element_blank(),
+          axis.ticks = element_blank(),
+          panel.grid = element_blank(),
+          panel.border = element_blank()) +
+    labs(title = "Fitness Quotient",
+         subtitle = case_when(pos==0 | pos == 1  ~ "Very Poor",
+                              pos == 2 ~ "Poor",
+                              pos == 3  ~ "Moderate",
+                              pos == 4 ~ "Good",
+                              pos == 5 ~ "Very Good"))
+}
+
+labels <- c("<img src = 'C:/Users/Admin/Downloads/pp.png' /><br>",
+            "<img src = 'C:/Users/Admin/Downloads/gg.png' /><br>")
+
+
+
+gg.gauge(data$FQ_Numeric[1],breaks=c(0,4/3,8/3,11/3,15/3,20.7/3))+
+  scale_x_continuous(labels = labels,breaks=c(-0.8,0.9)) +
+  theme(axis.text.x = ggtext::element_markdown())
+```
+
+### Fitness Quotient
+
+`r data$Recommendation[1]`
+
+## Referral Statement
+
+Refer to a Sports and Exercise Science Practitioner to improve your Fitness Quotient and for targeted interventions immediately.
