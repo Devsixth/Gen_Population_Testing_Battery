@@ -2,7 +2,7 @@ import pandas as pd
 from business_rules.variables import BaseVariables
 
 # Load data from CSV
-data = pd.read_csv('C:/Users/Admin/Desktop/gen/GENPOP_SimData.csv')
+data = pd.read_csv('GENPOP_SimData.csv')
 class AF1Calculator(BaseVariables):
     def __init__(self, age, gender, af1):
         self.age = age
@@ -542,4 +542,4 @@ data['BA'] = data.apply(lambda row: count_categories(row, 'Below Average'), axis
 print(data)
 
 # Now you can save the updated data back to the CSV file
-data.to_csv('C:/Users/Admin/Desktop/gen/GENPOP_SimData1.csv', index=False)
+data.to_csv('GENPOP_SimData1.csv', index=False)
