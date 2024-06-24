@@ -12,6 +12,7 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import Paragraph, Table, TableStyle
 from reportlab.platypus.frames import Frame
 from reportlab.lib.enums import TA_CENTER
+
 def get_recommendation(fq):
     if fq == 'VERY GOOD':
         return "The Assessment results show a high Fitness Quotient indicating better Quality of Life which results in reduced susceptibility to injuries and ability to perform routine activities with minimal pain to no pain. Stay physically active to maintain the same."
@@ -25,6 +26,7 @@ def get_recommendation(fq):
         return "The Assessment results reveal a significantly deficient Fitness Quotient, suggesting an increased risk of injury and a notable compromise in quality of life. Immediate attention and intervention are warranted."
     else:
         return "Fitness Quotient calculation unknown."
+
 class FQCalculator:
     def __init__(self, AA, A, BA):
         self.AA = AA
@@ -32,16 +34,21 @@ class FQCalculator:
         self.BA = BA
 
     def fq_string(self):
-        if self.AA >= 6 and self.A >= 5:
+        if self.AA == 6 or self.AA == 5:
             return 'VERY GOOD'
-        elif self.AA >= 4:
+        elif self.AA == 4 or (self.AA == 3 and self.A > 0):
             return 'GOOD'
-        elif self.AA >= 3:
+        elif (self.AA == 3 and self.A == 0) or \
+             (self.AA == 2) or \
+             (self.AA == 1 and self.BA == 0):
             return 'MODERATE'
-        elif self.AA >= 2:
+        elif (self.AA == 1 and self.BA > 0) or \
+             (self.AA == 0 and self.A > 1):
             return 'POOR'
-        else:
+        elif self.AA == 0 and self.A <= 1:
             return 'VERY POOR'
+        else:
+            return 'UNKNOWN'
 
 class GradeCalculator(BaseActions):
     GRADE_MAPPING = {
@@ -98,7 +105,7 @@ def load_data_from_db(db_file, client_id, date):
     client_data = dict(zip(client_columns, client_data))
 
     # Fetch test data for the current client
-    test_query = "SELECT test_name, status FROM TestDetails WHERE clientid = ? AND date = ?"
+    test_query = "SELECT testname, status FROM test_details WHERE clientid = ? AND date = ?"
     cursor.execute(test_query, (client_id, date))
     test_rows = cursor.fetchall()
     test_columns = [description[0] for description in cursor.description]
@@ -107,20 +114,25 @@ def load_data_from_db(db_file, client_id, date):
     client_data['Tests'] = test_data
 
     # Fetch recommendations data
-    recommendations_query = "SELECT test_name, recommendation FROM RecommendationDetails"
+    recommendations_query = "SELECT test_name, status, recommendation FROM recommendationdetails"
     cursor.execute(recommendations_query)
     recommendations_data = cursor.fetchall()
-    recommendations_dict = {row[0]: row[1] for row in recommendations_data}
+    recommendations_dict = {(row[0], row[1].lower()): row[2] for row in recommendations_data}
 
-    # Count the statuses
+    # Debug: Print fetched recommendations
+    #print("Fetched Recommendations:", recommendations_dict)
+
+    # Count the statuses and add recommendations
     status_counts = {'above average': 0, 'average': 0, 'below average': 0}
     for test in test_data:
         status = test['status'].lower()
         if status in status_counts:
             status_counts[status] += 1
-        # Add recommendations if status is "average" or "below average"
-        if status in ['average', 'below average']:
-            test['recommendation'] = recommendations_dict.get(test['test_name'], '')
+        # Add recommendations if status is "above average", "average" or "below average"
+        test['recommendation'] = recommendations_dict.get((test['testname'], status), '')
+
+    # Debug: Print test data with recommendations
+    #print("Test Data with Recommendations:", test_data)
 
     # Calculate FQ and FQ_Numeric
     client_data['AA'] = status_counts['above average']
@@ -133,7 +145,7 @@ def load_data_from_db(db_file, client_id, date):
     return client_data
 
 def create_gauge(fq_numeric, output_path):
-    plot_bgcolor = "#def"
+    plot_bgcolor = "#ffffff"
     quadrant_colors = [plot_bgcolor, "#2bad4e", "#85e043", "#eff229", "#f2a529", "#f25829"]
     quadrant_text = ["", "<b>Very Good</b>", "<b>Good</b>", "<b>Moderate</b>", "<b>Poor</b>", "<b>Very Poor</b>"]
     n_quadrants = len(quadrant_colors) - 1
@@ -183,7 +195,6 @@ def create_gauge(fq_numeric, output_path):
     )
     fig.write_image(output_path)
 
-
 def create_pdf(data):
     pdf_file = f"Assessment_Report_{data['clientid']}_{data['date']}.pdf"
     c = canvas.Canvas(pdf_file, pagesize=letter)
@@ -194,7 +205,7 @@ def create_pdf(data):
     c.setFont("Helvetica-Bold", 18)
     title_x = 50
     title_y = height - 80
-    c.setFillColor(colors.blue)
+    c.setFillColor(colors.midnightblue)
     c.drawString(title_x, title_y, "Comprehensive Physical Assessment")
 
     image_path = "C:/Users/Admin/Desktop/gen/images/Logo.jpg"
@@ -204,13 +215,13 @@ def create_pdf(data):
 
     # Draw a line after the title and image
     line_y = title_y - 35
-    c.setStrokeColor(colors.blue)
+    c.setStrokeColor(colors.midnightblue)
     c.setLineWidth(1)
     c.line(title_x, line_y, width - title_x, line_y)
 
     # Personal details
     c.setFillColor(colors.black)
-    c.setFont("Helvetica", 12)
+    c.setFont("Helvetica", 10)
     details_y = title_y - 50
     c.drawString(50, details_y, f"Name: {data['name']}")
     c.drawString(50, details_y - 20, f"Gender: {data['gender']}")
@@ -218,17 +229,17 @@ def create_pdf(data):
     c.drawString(350, details_y - 20, f"Date: {data['date']}")
 
     # Subtitle for Assessment Results
-    c.setFillColor(colors.black)
+    c.setFillColor(colors.purple)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, details_y - 40, "Assessment Results")
 
     # Table for Assessment Results
-    results_y = details_y - 185
+    results_y = details_y - 200
     test_data = [
         ["Test Name", "Status"]
     ]
     for test in data['Tests']:
-        test_data.append([test['test_name'], test['status']])
+        test_data.append([test['testname'], test['status']])
 
     table = Table(test_data, colWidths=[200, 100])
     table.setStyle(TableStyle([
@@ -236,7 +247,7 @@ def create_pdf(data):
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('FONTSIZE', (0, 0), (-1, 0), 8),
         ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
         ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
@@ -244,147 +255,109 @@ def create_pdf(data):
     ]))
     table.wrapOn(c, width, height)
     table.drawOn(c, 50, results_y)
+    # Subtitle for Fitness Quotient
+    fq_y = results_y - 50
+    c.setFillColor(colors.darkblue)
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, fq_y, "Fitness Quotient")
+    c.setFont("Helvetica", 8)
+    c.drawString(50, fq_y - 15, f"{data['FQ']}")
+
+    # Gauge plot
+    gauge_image_path = "gauge_plot.png"
+    create_gauge(data['FQ_Numeric'], gauge_image_path)
+    c.drawImage(gauge_image_path, 50, fq_y - 300, width=250, height=250)
+
+    # Recommendation text
+    recommendation_text = get_recommendation(data['FQ'])
+    style = ParagraphStyle(
+        name='Normal',
+        fontSize=12,
+        leading=20,
+        spaceAfter=10,
+        alignment=TA_CENTER  # Center align the text
+    )
+    recommendation_paragraph = Paragraph(recommendation_text, style)
+    frame = Frame(320, fq_y - 300, 200, 250, showBoundary=0)
+    frame.addFromList([recommendation_paragraph], c)
+
+    # Referral Statement
+    ref_y = fq_y - 330
+    c.setFillColor(colors.darkblue)
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(50, ref_y, "Referral Statement")
+    c.setFont("Helvetica", 10)
+    ref_text = Paragraph(data['Referral_Statement'], styles['Normal'])
+    ref_text.wrap(500, 400)
+    ref_text.drawOn(c, 50, ref_y - 30)
+    c.showPage()
+    # Title and image for the second page
+    c.setFont("Helvetica-Bold", 16)
+    c.setFillColor(colors.midnightblue)
+    c.drawString(title_x, title_y, "Comprehensive Physical Assessment")
+
+    c.drawImage(image_path, image_x, image_y, width=80, height=80)
+
+    c.setStrokeColor(colors.midnightblue)
+    c.setLineWidth(1)
+    c.line(title_x, line_y, width - title_x, line_y)
+
+    # Personal details
+    c.setFillColor(colors.black)
+    c.setFont("Helvetica", 10)
+    details_y = title_y - 50
+    c.drawString(50, details_y, f"Name: {data['name']}")
+    c.drawString(50, details_y - 20, f"Gender: {data['gender']}")
+    c.drawString(350, details_y, f"Date of Birth: {data['dob']}")
+    c.drawString(350, details_y - 20, f"Date: {data['date']}")
 
 
-    # Check if all tests are "Above Average"
-    all_above_average = all(test['status'].lower() == 'above average' for test in data['Tests'])
-    if all_above_average:
-        # Subtitle for Fitness Quotient
-        fq_y = results_y - 50
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, fq_y, "Fitness Quotient")
-        c.setFont("Helvetica", 8)
-        c.drawString(50, fq_y - 15, f"{data['FQ']}")
+    # Subtitle for Recommendations
+    rec1_y = details_y - 40  # Adjust starting Y position for recommendations section
 
-        # Gauge plot
-        gauge_image_path = "gauge_plot.png"
-        create_gauge(data['FQ_Numeric'], gauge_image_path)
-        c.drawImage(gauge_image_path, 50, fq_y - 300, width=250, height=250)
+    c.setFillColor(colors.olivedrab)
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(50, rec1_y, "Recommendations")
 
-        # Recommendation text
-        recommendation_text = get_recommendation(data['FQ'])
-        style = ParagraphStyle(
-            name='Normal',
-            fontSize=12,
-            leading=20,
-            spaceAfter=10,
-            alignment=TA_CENTER  # Center align the text
-        )
-        recommendation_paragraph = Paragraph(recommendation_text, style)
-        frame = Frame(320, fq_y - 300, 200, 250, showBoundary=0)
-        frame.addFromList([recommendation_paragraph], c)
+    # Fixed space between the title and the table
+    space_between_title_and_table = 7  # Adjust this value as needed
 
-        # Referral Statement
-        ref_y = fq_y - 340
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, ref_y, "Referral Statement")
-        c.setFont("Helvetica", 10)
-        ref_text = Paragraph(data['Referral_Statement'], styles['Normal'])
-        ref_text.wrap(500, 400)
-        ref_text.drawOn(c, 50, ref_y - 30)
-        c.save()
-        print(f"PDF report created successfully: {pdf_file}")
+    # Calculate the starting position for the recommendations table
+    table_start_y = rec1_y - space_between_title_and_table  # Ensure it starts just below the title
+
+    # Recommendations Table
+    recommendations_data = [["Individual Tests", ""]]
+    for test in data['Tests']:
+        if 'recommendation' in test:
+            recommendation = Paragraph(test['recommendation'], styles['Normal'])
+            recommendations_data.append([test['testname'], recommendation])
+
+    if len(recommendations_data) > 1:
+        rec_table = Table(recommendations_data, colWidths=[105, 430])
+        rec_table.setStyle(TableStyle([
+            ('SPAN', (0, 0), (1, 0)),
+            ('ALIGN', (0, 0), (1, 0), 'CENTER'),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.darkseagreen),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, 0), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('GRID', (0, 0), (-1, -1), 1, colors.black),
+            ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
+            ('FONTNAME', (0, 1), (-1, 0), 'Helvetica'),
 
 
+            ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ]))
+        rec_table.wrapOn(c, width, height)
 
+        # Draw the recommendations table
+        rec_table.drawOn(c, 50,
+                         table_start_y - rec_table._height)  # Use the table height to adjust the position dynamically
 
-
-    # If all tests are not "Above Average", add recommendations table on a new page
-    if not all_above_average:
-        # Subtitle for Recommendations
-        rec_y = results_y - 270
-
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, results_y - 16, "Recommendations")
-
-        # Recommendations Table
-        recommendations_data = [["Individual Tests", ""]]
-        for test in data['Tests']:
-            if 'recommendation' in test:
-                recommendation = Paragraph(test['recommendation'], styles['Normal'])
-                recommendations_data.append([test['test_name'], recommendation])
-
-        if len(recommendations_data) > 1:
-            rec_table = Table(recommendations_data, colWidths=[105, 430])
-            rec_table.setStyle(TableStyle([
-                ('SPAN', (0, 0), (1, 0)),
-                ('ALIGN', (0, 0), (1, 0), 'CENTER'),
-                ('BACKGROUND', (0, 0), (-1, 0), colors.darkseagreen),
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
-                ('GRID', (0, 0), (-1, -1), 1, colors.black),
-                ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
-                ('FONTNAME', (0, 1), (-1, 1), 'Helvetica'),
-                ('FONTSIZE', (0, 1), (-1, 1), 10),
-                ('BOTTOMPADDING', (0, 1), (-1, 1), 8),
-                ('FONTSIZE', (0, 2), (-1, -1), 8),
-            ]))
-            rec_table.wrapOn(c, width, height)
-
-            # Calculate the starting position for the recommendations table
-            rec_table_height = len(recommendations_data) * 18  # Approximate height for each row
-            rec_table_y = rec_y - rec_table_height - 20  # Adjust this value as needed
-
-            rec_table.drawOn(c, 50, rec_table_y)
-
-        # Add a new page for FQ, gauge plot, and referral statement
-        c.showPage()
-
-        # Title and image for the second page
-        c.setFont("Helvetica-Bold", 16)
-        c.setFillColor(colors.blue)
-        c.drawString(title_x, title_y, "Comprehensive Physical Assessment")
-
-        c.drawImage(image_path, image_x, image_y, width=80, height=80)
-
-        c.setStrokeColor(colors.blue)
-        c.setLineWidth(1)
-        c.line(title_x, line_y, width - title_x, line_y)
-
-        # Display FQ and FQ_Numeric
-        fq_y = title_y - 70
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, fq_y, "Fitness Quotient")
-        c.setFont("Helvetica", 8)
-        c.drawString(50, fq_y - 15, f"{data['FQ']}")
-
-        # Gauge plot
-        gauge_image_path = "gauge_plot.png"
-        create_gauge(data['FQ_Numeric'], gauge_image_path)
-        c.drawImage(gauge_image_path, 50, fq_y - 300, width=250, height=250)
-
-        # Recommendation text
-        recommendation_text = get_recommendation(data['FQ'])
-        style = ParagraphStyle(
-            name='Normal',
-            fontSize=12,
-            leading=20,
-            spaceAfter=10,
-            alignment=TA_CENTER  # Center align the text
-        )
-        recommendation_paragraph = Paragraph(recommendation_text, style)
-        frame = Frame(320, fq_y - 300, 200, 250, showBoundary=0)
-        frame.addFromList([recommendation_paragraph], c)
-
-        # Referral Statement
-        ref_y = fq_y - 340
-        c.setFillColor(colors.black)
-        c.setFont("Helvetica-Bold", 12)
-        c.drawString(50, ref_y, "Referral Statement")
-        c.setFont("Helvetica", 10)
-        ref_text = Paragraph(data['Referral_Statement'], styles['Normal'])
-        ref_text.wrap(500, 400)
-        ref_text.drawOn(c, 50, ref_y - 30)
-
-        c.save()
-        print(f"PDF report created successfully: {pdf_file}")
+    c.save()
+    print(f"PDF report created successfully: {pdf_file}")
 
 
 def generate_pdf_for_client(db_file, client_id, date):
@@ -398,9 +371,9 @@ def generate_pdf_for_client(db_file, client_id, date):
         create_pdf(client_data)
 
 # Database file
-db_file = "C:/Users/Admin/Downloads/Genpopulation (3).db"
+db_file = "C:/Users/Admin/Downloads/Genpopulation (6).db"
 
 # Generate PDF for a specific client ID and date
-client_id = 'PASCHN0001'
-date = '2024-05-29'
+client_id = 'KANYGOHO_0005'
+date = '2024-06-21'
 generate_pdf_for_client(db_file, client_id, date)
