@@ -153,7 +153,9 @@ def create_gauge(fq_numeric, output_path):
     min_value = 0
     max_value = 5
     hand_length = np.sqrt(2) / 4
-    hand_angle = np.pi * (1 - (max(min_value, min(max_value, fq_numeric)) - min_value) / (max_value - min_value))
+
+    # Adjust hand_angle to point to the middle of each quadrant
+    hand_angle = np.pi * (1 - (max(min_value, min(max_value, fq_numeric - 0.5)) - min_value) / (max_value - min_value))
 
     fig = go.Figure(
         data=[
@@ -165,7 +167,7 @@ def create_gauge(fq_numeric, output_path):
                 text=quadrant_text,
                 textinfo="text",
                 hoverinfo="skip",
-                textfont=dict(size=30)  # Increase the font size of the quadrant text
+                textfont=dict(size=40)  # Increase the font size of the quadrant text
             ),
         ],
         layout=go.Layout(
@@ -188,12 +190,36 @@ def create_gauge(fq_numeric, output_path):
                     type="line",
                     x0=0.5, x1=0.5 + hand_length * np.cos(hand_angle),
                     y0=0.5, y1=0.5 + hand_length * np.sin(hand_angle),
-                    line=dict(color="#333", width=4)  # Increased line width for better visibility
+                    line=dict(color="#333", width=7)  # Increased line width for better visibility
                 )
             ]
         )
     )
     fig.write_image(output_path)
+
+
+
+def add_watermark(c, text, width, height):
+    # Save the state of the canvas
+    c.saveState()
+
+    # Set watermark properties
+    c.setFont("Helvetica-Bold", 50)
+    c.setFillGray(0.5, 0.5)
+
+    # Calculate the center position
+    text_width = c.stringWidth(text, "Helvetica-Bold", 50)
+    x = (width - text_width) / 2
+    y = height / 2
+
+    # Rotate the canvas for diagonal watermark
+    c.translate(x, y)
+    c.rotate(45)
+    c.drawCentredString(200, -100, text)
+
+    # Restore the state of the canvas
+    c.restoreState()
+
 
 def create_pdf(data):
     pdf_file = f"Assessment_Report_{data['clientid']}_{data['date']}.pdf"
@@ -231,10 +257,10 @@ def create_pdf(data):
     # Subtitle for Assessment Results
     c.setFillColor(colors.purple)
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(50, details_y - 40, "Assessment Results")
+    c.drawString(50, details_y - 50, "Assessment Results")
 
     # Table for Assessment Results
-    results_y = details_y - 200
+    results_y = details_y - 215
     test_data = [
         ["Test Name", "Status"]
     ]
@@ -282,7 +308,7 @@ def create_pdf(data):
     frame.addFromList([recommendation_paragraph], c)
 
     # Referral Statement
-    ref_y = fq_y - 330
+    ref_y = fq_y - 310
     c.setFillColor(colors.darkblue)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, ref_y, "Referral Statement")
@@ -290,7 +316,12 @@ def create_pdf(data):
     ref_text = Paragraph(data['Referral_Statement'], styles['Normal'])
     ref_text.wrap(500, 400)
     ref_text.drawOn(c, 50, ref_y - 30)
+
+    # Add watermark
+    add_watermark(c, "Movement Lab", width, height)
+
     c.showPage()
+
     # Title and image for the second page
     c.setFont("Helvetica-Bold", 16)
     c.setFillColor(colors.midnightblue)
@@ -311,7 +342,6 @@ def create_pdf(data):
     c.drawString(350, details_y, f"Date of Birth: {data['dob']}")
     c.drawString(350, details_y - 20, f"Date: {data['date']}")
 
-
     # Subtitle for Recommendations
     rec1_y = details_y - 40  # Adjust starting Y position for recommendations section
 
@@ -320,7 +350,7 @@ def create_pdf(data):
     c.drawString(50, rec1_y, "Recommendations")
 
     # Fixed space between the title and the table
-    space_between_title_and_table = 7  # Adjust this value as needed
+    space_between_title_and_table = 9  # Adjust this value as needed
 
     # Calculate the starting position for the recommendations table
     table_start_y = rec1_y - space_between_title_and_table  # Ensure it starts just below the title
@@ -346,8 +376,6 @@ def create_pdf(data):
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 1), (-1, 0), 'Helvetica'),
-
-
             ('FONTSIZE', (0, 1), (-1, -1), 8),
         ]))
         rec_table.wrapOn(c, width, height)
@@ -355,6 +383,9 @@ def create_pdf(data):
         # Draw the recommendations table
         rec_table.drawOn(c, 50,
                          table_start_y - rec_table._height)  # Use the table height to adjust the position dynamically
+
+    # Add watermark
+    add_watermark(c, "Movement Lab", width, height)
 
     c.save()
     print(f"PDF report created successfully: {pdf_file}")
