@@ -26,29 +26,48 @@ def get_recommendation(fq):
         return "The Assessment results reveal a significantly deficient Fitness Quotient, suggesting an increased risk of injury and a notable compromise in quality of life. Immediate attention and intervention are warranted."
     else:
         return "Fitness Quotient calculation unknown."
-
 class FQCalculator:
-    def __init__(self, AA, A, BA):
+    def __init__(self, AA, A, BA, num_tests):
         self.AA = AA
         self.A = A
         self.BA = BA
+        self.num_tests = num_tests
 
     def fq_string(self):
-        if self.AA == 6 or self.AA == 5:
-            return 'VERY GOOD'
-        elif self.AA == 4 or (self.AA == 3 and self.A > 0):
-            return 'GOOD'
-        elif (self.AA == 3 and self.A == 0) or \
-             (self.AA == 2) or \
-             (self.AA == 1 and self.BA == 0):
-            return 'MODERATE'
-        elif (self.AA == 1 and self.BA > 0) or \
-             (self.AA == 0 and self.A > 1):
-            return 'POOR'
-        elif self.AA == 0 and self.A <= 1:
-            return 'VERY POOR'
-        else:
-            return 'UNKNOWN'
+        if self.num_tests == 6:
+            if self.AA == 6 or self.AA == 5:
+                return 'VERY GOOD'
+            elif self.AA == 4 or (self.AA == 3 and self.A > 0):
+                return 'GOOD'
+            elif (self.AA == 3 and self.A == 0) or (self.AA == 2) or (self.AA == 1 and self.BA == 0):
+                return 'MODERATE'
+            elif (self.AA == 1 and self.BA > 0) or (self.AA == 0 and self.A > 1):
+                return 'POOR'
+            elif self.AA == 0 and self.A <= 1:
+                return 'VERY POOR'
+            else:
+                return 'UNKNOWN'
+        elif self.num_tests == 7:
+            if self.AA == 7 and self.A == 0 and self.BA == 0:
+                return 'VERY GOOD'
+            elif self.AA == 6 and self.A + self.BA <= 1:
+                return 'VERY GOOD'
+            elif self.AA == 5 and self.A + self.BA <= 2:
+                return 'GOOD'
+            elif self.AA == 4 and self.A + self.BA <= 3:
+                return 'GOOD'
+            elif self.AA == 3 and self.A + self.BA <= 4:
+                return 'MODERATE'
+            elif self.AA == 2 and self.A + self.BA <= 5:
+                return 'MODERATE'
+            elif self.AA == 1 and self.A + self.BA <= 6:
+                return 'POOR'
+            elif self.AA == 0 and self.A == 0 and self.BA == 7:
+                return 'VERY POOR'
+            elif self.AA == 0 and self.A <= 1 and self.BA >= 6:
+                return 'VERY POOR'
+            else:
+                return 'UNKNOWN'
 
 class GradeCalculator(BaseActions):
     GRADE_MAPPING = {
@@ -69,6 +88,7 @@ class GradeCalculator(BaseActions):
     def get_grade(self):
         return self.grade
 
+
 class DataVariables(BaseVariables):
     def __init__(self, fq_value):
         self.fq_value = fq_value
@@ -77,8 +97,8 @@ class DataVariables(BaseVariables):
     def fq_numeric(self):
         return GradeCalculator(self.fq_value).get_grade()
 
-def calculate_fq(AA, A, BA):
-    fq_calculator = FQCalculator(AA, A, BA)
+def calculate_fq(AA, A, BA, num_tests):
+    fq_calculator = FQCalculator(AA, A, BA, num_tests)
     return fq_calculator.fq_string()
 
 def check_fq_grade(fq_value):
@@ -86,6 +106,7 @@ def check_fq_grade(fq_value):
     actions = GradeCalculator(fq_value)
     run_all(rule_list=[], defined_variables=variables, defined_actions=actions)
     return actions.get_grade()
+
 
 def load_data_from_db(db_file, client_id, date):
     conn = sqlite3.connect(db_file)
@@ -119,31 +140,24 @@ def load_data_from_db(db_file, client_id, date):
     recommendations_data = cursor.fetchall()
     recommendations_dict = {(row[0], row[1].lower()): row[2] for row in recommendations_data}
 
-    # Debug: Print fetched recommendations
-    #print("Fetched Recommendations:", recommendations_dict)
-
     # Count the statuses and add recommendations
     status_counts = {'above average': 0, 'average': 0, 'below average': 0}
     for test in test_data:
         status = test['status'].lower()
         if status in status_counts:
             status_counts[status] += 1
-        # Add recommendations if status is "above average", "average" or "below average"
         test['recommendation'] = recommendations_dict.get((test['testname'], status), '')
 
-    # Debug: Print test data with recommendations
-    #print("Test Data with Recommendations:", test_data)
-
     # Calculate FQ and FQ_Numeric
+    num_tests = len(test_data)
     client_data['AA'] = status_counts['above average']
     client_data['A'] = status_counts['average']
     client_data['BA'] = status_counts['below average']
-    client_data['FQ'] = calculate_fq(client_data['AA'], client_data['A'], client_data['BA'])
+    client_data['FQ'] = calculate_fq(client_data['AA'], client_data['A'], client_data['BA'], num_tests)
     client_data['FQ_Numeric'] = check_fq_grade(client_data['FQ'])
 
     conn.close()
     return client_data
-
 def create_gauge(fq_numeric, output_path):
     plot_bgcolor = "#ffffff"
     quadrant_colors = [plot_bgcolor, "#2bad4e", "#85e043", "#eff229", "#f2a529", "#f25829"]
@@ -405,6 +419,6 @@ def generate_pdf_for_client(db_file, client_id, date):
 db_file = "C:/Users/Admin/Downloads/Genpopulation (6).db"
 
 # Generate PDF for a specific client ID and date
-client_id = 'KANYGOHO_0005'
-date = '2024-06-21'
+client_id = 'KANYGOHO_0002'
+date = '2024-06-19'
 generate_pdf_for_client(db_file, client_id, date)
