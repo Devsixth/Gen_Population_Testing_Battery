@@ -235,41 +235,48 @@ def add_watermark(c, text, width, height):
     c.restoreState()
 
 
+def draw_header(c, title, logo_path):
+    header_height = 230  # Increased header height
+    logo_width = 105     # Increased logo width
+    logo_height = 70     # Increased logo height
+
+    # Draw the header background
+    c.setFillColor(colors.black)
+    c.rect(0, 730, 650, header_height, fill=1)
+
+    # Set the title color and font
+    c.setFillColor(colors.white)
+    c.setFont("Helvetica-Bold", 18)  # Increased font size for the title
+
+    # Draw the title
+    c.drawString(200, 760, title)  # Adjusted y-position for title
+
+    # Draw the logo with increased size
+    c.drawImage(logo_path, 50, 730, width=logo_width, height=logo_height)  # Adjusted y-position for logo
+
 def create_pdf(data):
     pdf_file = f"Assessment_Report_{data['clientid']}_{data['date']}.pdf"
     c = canvas.Canvas(pdf_file, pagesize=letter)
     width, height = letter
     styles = getSampleStyleSheet()
 
-    # Title and image
-    c.setFont("Helvetica-Bold", 18)
-    title_x = 50
-    title_y = height - 80
-    c.setFillColor(colors.midnightblue)
-    c.drawString(title_x, title_y, "Comprehensive Physical Assessment")
+    title = "Comprehensive Physical Assessment"
+    logo_path = "C:/Users/Admin/Desktop/gen/images/Logo.jpg"  # Adjust the path to the logo image
 
-    image_path = "C:/Users/Admin/Desktop/gen/images/Logo.jpg"
-    image_x = title_x + 370
-    image_y = title_y - 25
-    c.drawImage(image_path, image_x, image_y, width=80, height=80)
-
-    # Draw a line after the title and image
-    line_y = title_y - 35
-    c.setStrokeColor(colors.midnightblue)
-    c.setLineWidth(1)
-    c.line(title_x, line_y, width - title_x, line_y)
+    # Draw header
+    draw_header(c, title, logo_path)
 
     # Personal details
     c.setFillColor(colors.black)
     c.setFont("Helvetica", 10)
-    details_y = title_y - 50
+    details_y = height - 100  # Start below the header
     c.drawString(50, details_y, f"Name: {data['name']}")
     c.drawString(50, details_y - 20, f"Gender: {data['gender']}")
     c.drawString(350, details_y, f"Date of Birth: {data['dob']}")
     c.drawString(350, details_y - 20, f"Date: {data['date']}")
 
     # Subtitle for Assessment Results
-    c.setFillColor(colors.purple)
+    c.setFillColor(colors.darkorange)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, details_y - 50, "Assessment Results")
 
@@ -280,26 +287,29 @@ def create_pdf(data):
     ]
     for test in data['Tests']:
         test_data.append([test['testname'], test['status']])
-
     table = Table(test_data, colWidths=[200, 100])
     table.setStyle(TableStyle([
-        ('BACKGROUND', (0, 0), (-1, 0), colors.rosybrown),
-        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+        ('GRID', (0, 0), (-1, -1), 1, colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, 0), 8),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
-        ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+        ('FONTSIZE', (0, 0), (-1, 0), 10),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),  # Adjust bottom padding for title row
+        ('TOPPADDING', (0, 0), (-1, 0), 10),  # Adjust top padding for title row
+        ('BACKGROUND', (0, 1), (-1, -1), colors.white),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
         ('FONTSIZE', (0, 1), (-1, -1), 8),
     ]))
     table.wrapOn(c, width, height)
-    table.drawOn(c, 50, results_y)
+    table.drawOn(c, 150, results_y)
+
     # Subtitle for Fitness Quotient
     fq_y = results_y - 50
-    c.setFillColor(colors.darkblue)
+    c.setFillColor(colors.darkorange)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, fq_y, "Fitness Quotient")
+    c.setFillColor(colors.black)
     c.setFont("Helvetica", 8)
     c.drawString(50, fq_y - 15, f"{data['FQ']}")
 
@@ -323,7 +333,7 @@ def create_pdf(data):
 
     # Referral Statement
     ref_y = fq_y - 310
-    c.setFillColor(colors.darkblue)
+    c.setFillColor(colors.darkorange)
     c.setFont("Helvetica-Bold", 12)
     c.drawString(50, ref_y, "Referral Statement")
     c.setFont("Helvetica", 10)
@@ -336,21 +346,13 @@ def create_pdf(data):
 
     c.showPage()
 
-    # Title and image for the second page
-    c.setFont("Helvetica-Bold", 16)
-    c.setFillColor(colors.midnightblue)
-    c.drawString(title_x, title_y, "Comprehensive Physical Assessment")
-
-    c.drawImage(image_path, image_x, image_y, width=80, height=80)
-
-    c.setStrokeColor(colors.midnightblue)
-    c.setLineWidth(1)
-    c.line(title_x, line_y, width - title_x, line_y)
+    # Draw header for the second page
+    draw_header(c, title, logo_path)
 
     # Personal details
     c.setFillColor(colors.black)
     c.setFont("Helvetica", 10)
-    details_y = title_y - 50
+    details_y = height - 100
     c.drawString(50, details_y, f"Name: {data['name']}")
     c.drawString(50, details_y - 20, f"Gender: {data['gender']}")
     c.drawString(350, details_y, f"Date of Birth: {data['dob']}")
@@ -359,12 +361,12 @@ def create_pdf(data):
     # Subtitle for Recommendations
     rec1_y = details_y - 40  # Adjust starting Y position for recommendations section
 
-    c.setFillColor(colors.olivedrab)
-    c.setFont("Helvetica-Bold", 10)
+    c.setFillColor(colors.darkorange)
+    c.setFont("Helvetica-Bold", 12)
     c.drawString(50, rec1_y, "Recommendations")
 
     # Fixed space between the title and the table
-    space_between_title_and_table = 9  # Adjust this value as needed
+    space_between_title_and_table = 10  # Adjust this value as needed
 
     # Calculate the starting position for the recommendations table
     table_start_y = rec1_y - space_between_title_and_table  # Ensure it starts just below the title
@@ -381,12 +383,13 @@ def create_pdf(data):
         rec_table.setStyle(TableStyle([
             ('SPAN', (0, 0), (1, 0)),
             ('ALIGN', (0, 0), (1, 0), 'CENTER'),
-            ('BACKGROUND', (0, 0), (-1, 0), colors.darkseagreen),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.black),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.black),
+            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 8),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
-            ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+            ('FONTSIZE', (0, 0), (-1, 0), 10),
+            ('BOTTOMPADDING', (0, 0), (-1, 0), 10),
+            ('TOPPADDING', (0, 0), (-1, 0), 10),
+            ('BACKGROUND', (0, 1), (-1, -1), colors.white),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 1), (-1, 0), 'Helvetica'),
@@ -403,8 +406,6 @@ def create_pdf(data):
 
     c.save()
     print(f"PDF report created successfully: {pdf_file}")
-
-
 def generate_pdf_for_client(db_file, client_id, date):
     client_data = load_data_from_db(db_file, client_id, date)
     if client_data:
