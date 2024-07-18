@@ -238,21 +238,21 @@ def add_watermark(c, text, width, height):
 def draw_header(c, title, logo_path):
     header_height = 230  # Increased header height
     logo_width = 105     # Increased logo width
-    logo_height = 70     # Increased logo height
+    logo_height = 65     # Increased logo height
 
     # Draw the header background
     c.setFillColor(colors.black)
-    c.rect(0, 730, 650, header_height, fill=1)
+    c.rect(0, 725, 650, header_height, fill=1)
 
     # Set the title color and font
     c.setFillColor(colors.white)
     c.setFont("Helvetica-Bold", 18)  # Increased font size for the title
 
     # Draw the title
-    c.drawString(200, 760, title)  # Adjusted y-position for title
+    c.drawString(180, 760, title)  # Adjusted y-position for title
 
     # Draw the logo with increased size
-    c.drawImage(logo_path, 50, 730, width=logo_width, height=logo_height)  # Adjusted y-position for logo
+    c.drawImage(logo_path, 5, 725, width=logo_width, height=logo_height)  # Adjusted y-position for logo
 
 def create_pdf(data):
     pdf_file = f"Assessment_Report_{data['clientid']}_{data['date']}.pdf"
@@ -261,7 +261,7 @@ def create_pdf(data):
     styles = getSampleStyleSheet()
 
     title = "Comprehensive Physical Assessment"
-    logo_path = "C:/Users/Admin/Desktop/gen/images/Logo.jpg"  # Adjust the path to the logo image
+    logo_path = "C:/Users/Admin/Downloads/logo_new.jpeg"  # Adjust the path to the logo image
 
     # Draw header
     draw_header(c, title, logo_path)
@@ -293,13 +293,13 @@ def create_pdf(data):
         ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
         ('GRID', (0, 0), (-1, -1), 1, colors.white),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, 0), 10),
-        ('BOTTOMPADDING', (0, 0), (-1, 0), 10),  # Adjust bottom padding for title row
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 12),  # Adjust bottom padding for title row
         ('TOPPADDING', (0, 0), (-1, 0), 10),  # Adjust top padding for title row
         ('BACKGROUND', (0, 1), (-1, -1), colors.white),
         ('GRID', (0, 0), (-1, -1), 1, colors.black),
-        ('FONTSIZE', (0, 1), (-1, -1), 8),
+        ('FONTSIZE', (0, 1), (-1, -1), 10),
     ]))
     table.wrapOn(c, width, height)
     table.drawOn(c, 150, results_y)
@@ -379,7 +379,7 @@ def create_pdf(data):
             recommendations_data.append([test['testname'], recommendation])
 
     if len(recommendations_data) > 1:
-        rec_table = Table(recommendations_data, colWidths=[105, 430])
+        rec_table = Table(recommendations_data, colWidths=[135, 415])
         rec_table.setStyle(TableStyle([
             ('SPAN', (0, 0), (1, 0)),
             ('ALIGN', (0, 0), (1, 0), 'CENTER'),
@@ -393,7 +393,7 @@ def create_pdf(data):
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('ALIGN', (0, 1), (-1, -1), 'LEFT'),
             ('FONTNAME', (0, 1), (-1, 0), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            ('FONTSIZE', (0, 1), (-1, -1), 10),
         ]))
         rec_table.wrapOn(c, width, height)
 
