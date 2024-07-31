@@ -50,24 +50,74 @@ class FQCalculator:
         elif self.num_tests == 7:
             if self.AA == 7 and self.A == 0 and self.BA == 0:
                 return 'VERY GOOD'
-            elif self.AA == 6 and self.A + self.BA <= 1:
+            elif self.AA == 6 and self.A == 1 and self.BA == 0:
                 return 'VERY GOOD'
-            elif self.AA == 5 and self.A + self.BA <= 2:
+            elif self.AA == 6 and self.A == 0 and self.BA == 1:
+                return 'VERY GOOD'
+            elif self.AA == 5 and self.A == 2 and self.BA == 0:
                 return 'GOOD'
-            elif self.AA == 4 and self.A + self.BA <= 3:
+            elif self.AA == 5 and self.A == 1 and self.BA == 1:
                 return 'GOOD'
-            elif self.AA == 3 and self.A + self.BA <= 4:
+            elif self.AA == 5 and self.A == 0 and self.BA == 2:
+                return 'GOOD'
+            elif self.AA == 4 and self.A == 3 and self.BA == 0:
+                return 'GOOD'
+            elif self.AA == 4 and self.A == 2 and self.BA == 1:
+                return 'GOOD'
+            elif self.AA == 4 and self.A == 1 and self.BA == 2:
+                return 'GOOD'
+            elif self.AA == 4 and self.A == 0 and self.BA == 3:
+                return 'GOOD'
+            elif self.AA == 3 and self.A == 4 and self.BA == 0:
+                return 'GOOD'
+            elif self.AA == 3 and self.A == 3 and self.BA == 1:
                 return 'MODERATE'
-            elif self.AA == 2 and self.A + self.BA <= 5:
+            elif self.AA == 3 and self.A == 2 and self.BA == 2:
                 return 'MODERATE'
-            elif self.AA == 1 and self.A + self.BA <= 6:
+            elif self.AA == 2 and self.A == 4 and self.BA == 1:
+                return 'MODERATE'
+            elif self.AA == 2 and self.A == 3 and self.BA == 2:
+                return 'MODERATE'
+            elif self.AA == 2 and self.A == 5 and self.BA == 0:
+                return 'MODERATE'
+            elif self.AA == 1 and self.A == 6 and self.BA == 0:
+                return 'MODERATE'
+            elif self.AA == 0 and self.A == 2 and self.BA == 5:
+                return 'POOR'
+            elif self.AA == 2 and self.A == 0 and self.BA == 5:
+                return 'POOR'
+            elif self.AA == 1 and self.A == 1 and self.BA == 5:
+                return 'POOR'
+            elif self.AA == 3 and self.A == 0 and self.BA == 4:
+                return 'POOR'
+            elif self.AA == 2 and self.A == 1 and self.BA == 4:
+                return 'POOR'
+            elif self.AA == 1 and self.A == 2 and self.BA == 4:
+                return 'POOR'
+            elif self.AA == 0 and self.A == 3 and self.BA == 4:
+                return 'POOR'
+            elif self.AA == 1 and self.A == 3 and self.BA == 3:
+                return 'POOR'
+            elif self.AA == 0 and self.A == 4 and self.BA == 3:
+                return 'POOR'
+            elif self.AA == 2 and self.A == 2 and self.BA == 3:
+                return 'POOR'
+            elif self.AA == 0 and self.A == 5 and self.BA == 2:
+                return 'POOR'
+            elif self.AA == 1 and self.A == 4 and self.BA == 2:
+                return 'POOR'
+            elif self.AA == 0 and self.A == 6 and self.BA == 1:
+                return 'POOR'
+            elif self.AA == 1 and self.A == 5 and self.BA == 1:
                 return 'POOR'
             elif self.AA == 0 and self.A == 0 and self.BA == 7:
                 return 'VERY POOR'
-            elif self.AA == 0 and self.A <= 1 and self.BA >= 6:
+            elif self.AA == 0 and self.A == 1 and self.BA == 6:
                 return 'VERY POOR'
-            else:
-                return 'UNKNOWN'
+            elif self.AA == 1 and self.A == 0 and self.BA == 6:
+                return 'VERY POOR'
+        return 'Unknown'
+
 
 class GradeCalculator(BaseActions):
     GRADE_MAPPING = {
@@ -420,6 +470,6 @@ def generate_pdf_for_client(db_file, client_id, date):
 db_file = "C:/Users/Admin/Downloads/Genpopulation (6).db"
 
 # Generate PDF for a specific client ID and date
-client_id = 'KANYGOHO_0002'
-date = '2024-06-19'
+client_id = 'KANYGOHO_0005'
+date = '2024-06-21'
 generate_pdf_for_client(db_file, client_id, date)
