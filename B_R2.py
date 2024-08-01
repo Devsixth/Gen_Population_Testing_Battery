@@ -1,8 +1,8 @@
-import pandas as pd
 from business_rules.variables import BaseVariables
-
+import pandas as pd
 # Load data from CSV
 data = pd.read_csv('GENPOP_SimData.csv')
+
 class AF1Calculator(BaseVariables):
     def __init__(self, age, gender, af1):
         self.age = age
@@ -12,37 +12,157 @@ class AF1Calculator(BaseVariables):
     def calculate_af1_c(self):
         age_ranges = {
             'Male': {
-                range(18, 26): {'Above Average': 100, 'Average': 90, 'Below Average': 80},
-                range(26, 36): {'Above Average': 110, 'Average': 98.5, 'Below Average': 86},
-                range(36, 46): {'Above Average': 115, 'Average': 101.5, 'Below Average': 89},
-                range(46, 56): {'Above Average': 121, 'Average': 107.5, 'Below Average': 95},
-                range(56, 66): {'Above Average': 128, 'Average': 112.5, 'Below Average': 98},
-                range(66, 150): {'Above Average': 126, 'Average': 113, 'Below Average': 101}
+                range(18, 26): {'Below Average': 100, 'Average': range(80, 100), 'Above Average': 79},
+                range(26, 36): {'Below Average': 110, 'Average': range(86, 112), 'Above Average': 85},
+                range(36, 46): {'Below Average': 115, 'Average': range(89, 115), 'Above Average': 88},
+                range(46, 56): {'Below Average': 121, 'Average': range(95, 121), 'Above Average': 94},
+                range(56, 66): {'Below Average': 128, 'Average': range(98, 128), 'Above Average': 97},
+                range(66, 150): {'Below Average': 126, 'Average': range(101, 126), 'Above Average': 100}
             },
             'Female': {
-                range(18, 26): {'Above Average': 104, 'Average': 94.5, 'Below Average': 86},
-                range(26, 36): {'Above Average': 110, 'Average': 101, 'Below Average': 93},
-                range(36, 46): {'Above Average': 115, 'Average': 105.5, 'Below Average': 97},
-                range(46, 56): {'Above Average': 120, 'Average': 110.5, 'Below Average': 102},
-                range(56, 66): {'Above Average': 129, 'Average': 117, 'Below Average': 106},
-                range(66, 150): {'Above Average': 126, 'Average': 113.5, 'Below Average': 102}
+                range(18, 26): {'Below Average': 104, 'Average': range(86, 104), 'Above Average': 85},
+                range(26, 36): {'Below Average': 110, 'Average': range(93, 110), 'Above Average': 92},
+                range(36, 46): {'Below Average': 115, 'Average': range(97, 115), 'Above Average': 96},
+                range(46, 56): {'Below Average': 120, 'Average': range(102, 120), 'Above Average': 101},
+                range(56, 66): {'Below Average': 129, 'Average': range(106, 129), 'Above Average': 105},
+                range(66, 150): {'Below Average': 126, 'Average': range(102, 126), 'Above Average': 101}
             }
         }
 
         for age_range, categories in age_ranges[self.gender].items():
             if self.age in age_range:
-                if self.af1 >= categories['Above Average']:
-                    return 'Above Average'
-                elif categories['Below Average'] <= self.af1 < categories['Above Average']:
-                    return 'Average'
-                else:
+                if self.af1 >= categories['Below Average']:
                     return 'Below Average'
+                elif self.af1 in categories['Average']:
+                    return 'Average'
+                elif self.af1 <= categories['Above Average']:
+                    return 'Above Average'
 
         return 'Unknown'
 
 def calculate_af1_c(row):
     af1_calculator = AF1Calculator(row['Age'], row['Gender'], row['AF1'])
     return af1_calculator.calculate_af1_c()
+class BL1Calculator(BaseVariables):
+    def __init__(self, bl1):
+        self.bl1 = bl1
+        self.thresholds = {
+            'Below Average': (0, 24),
+            'Average': (25, 39),
+            'Above Average': (40, 60)
+        }
+
+    def calculate_bl1(self):
+        for category, (min_val, max_val) in self.thresholds.items():
+            if (min_val is None or self.bl1 >= min_val) and (max_val is None or self.bl1 <= max_val):
+                return category
+        return 'Unknown'
+
+def calculate_bl1(row):
+    bl1_calculator = BL1Calculator(row['BL1'])
+    return bl1_calculator.calculate_bl1()
+class BC1Calculator(BaseVariables):
+    def __init__(self, age, gender, body_fat):
+        self.age = age
+        self.gender = gender
+        self.body_fat = body_fat
+        self.thresholds = {
+            'Female': {
+                (20, 40): {'Below Average': 35, 'Average': (22, 34), 'Above Average': 21},
+                (40, 60): {'Below Average': 36, 'Average': (24, 35), 'Above Average': 23},
+                (60, 80): {'Below Average': 37, 'Average': (25, 36), 'Above Average': 24},
+            },
+            'Male': {
+                (20, 40): {'Below Average': 25, 'Average': (9, 24), 'Above Average': 8},
+                (40, 60): {'Below Average': 27, 'Average': (12, 26), 'Above Average': 11},
+                (60, 150): {'Below Average': 29, 'Average': (14, 28), 'Above Average': 13},
+            }
+        }
+
+    def calculate_bc1_c(self):
+        for age_range, categories in self.thresholds[self.gender].items():
+            if self.age in range(*age_range):
+                if self.body_fat >= categories['Below Average']:
+                    return 'Below Average'
+                elif categories['Average'][0] <= self.body_fat <= categories['Average'][1]:
+                    return 'Average'
+                elif self.body_fat <= categories['Above Average']:
+                    return 'Above Average'
+        return 'Unknown'
+
+def calculate_bc1_c(row):
+    bc1_calculator = BC1Calculator(row['Age'], row['Gender'], row['BC1'])
+    return bc1_calculator.calculate_bc1_c()
+
+class ME1Calculator(BaseVariables):
+    def __init__(self, age, gender, me1):
+        self.age = age
+        self.gender = gender
+        self.me1 = me1
+
+    def calculate_me1(self):
+        age_ranges = {
+            'Male': {
+                range(17, 19): {'Above Average': 56, 'Average': (18, 56), 'Below Average': 18},
+                range(20, 29): {'Above Average': 47, 'Average': (16, 47), 'Below Average': 16},
+                range(30, 39): {'Above Average': 41, 'Average': (12, 41), 'Below Average': 12},
+                range(40, 49): {'Above Average': 34, 'Average': (10, 34), 'Below Average': 10},
+                range(50, 59): {'Above Average': 31, 'Average': (8, 31), 'Below Average': 8},
+                range(60, 150): {'Above Average': 30, 'Average': (5, 30), 'Below Average': 5}
+            },
+            'Female': {
+                range(17, 19): {'Above Average': 30, 'Average': (6, 30), 'Below Average': 6},
+                range(20, 29): {'Above Average': 32, 'Average': (8, 32), 'Below Average': 8},
+                range(30, 39): {'Above Average': 28, 'Average': (6, 28), 'Below Average': 6},
+                range(40, 49): {'Above Average': 20, 'Average': (4, 20), 'Below Average': 4},
+                range(50, 59): {'Above Average': 16, 'Average': (3, 16), 'Below Average': 3},
+                range(60, 150): {'Above Average': 12, 'Average': (2, 12), 'Below Average': 2}
+            }
+        }
+
+        for age_range, categories in age_ranges[self.gender].items():
+            if self.age in age_range:
+                if self.me1 > categories['Above Average']:
+                    return 'Above Average'
+                elif categories['Average'][0] <= self.me1 <= categories['Average'][1]:
+                    return 'Average'
+                elif self.me1 < categories['Below Average']:
+                    return 'Below Average'
+
+        return 'Unknown'
+
+def calculate_me1(row):
+    me1_calculator = ME1Calculator(row['Age'], row['Gender'], row['ME1'])
+    return me1_calculator.calculate_me1()
+
+class MSLBCalculator(BaseVariables):
+    def __init__(self, gender, mslb):
+        self.gender = gender
+        self.mslb = mslb
+
+    def calculate_mslb_c(self):
+        thresholds = {
+            'Male': {'Below Average': 27, 'Average': (28, 33), 'Above Average': 34},
+            'Female': {'Below Average': 20, 'Average': (21, 28), 'Above Average': 29}
+        }
+
+        if self.gender in thresholds:
+            gender_thresholds = thresholds[self.gender]
+            if self.mslb >= gender_thresholds['Above Average']:
+                return 'Above Average'
+            elif gender_thresholds['Average'][0] <= self.mslb <= gender_thresholds['Average'][1]:
+                return 'Average'
+            elif self.mslb <= gender_thresholds['Below Average']:
+                return 'Below Average'
+            else:
+                return 'Unknown'
+        else:
+            return 'Unknown'
+
+def calculate_mslb_c(row):
+    mslb_calculator = MSLBCalculator(row['Gender'], row['MSLB1'])
+    return mslb_calculator.calculate_mslb_c()
+
 
 
 class AF2Calculator(BaseVariables):
@@ -242,74 +362,7 @@ class MSUB1Calculator(BaseVariables):
 def calculate_msub1_c(row):
     msub1_calculator = MSUB1Calculator(row['Gender'], row['MSUB1'])
     return msub1_calculator.calculate_msub1_c()
-class MSLBCalculator(BaseVariables):
-    def __init__(self, gender, mslb):
-        self.gender = gender
-        self.mslb = mslb
 
-    def calculate_mslb_c(self):
-        thresholds = {
-            'Male': {'Below Average': 27, 'Average': (28, 33), 'Above Average': 34},
-            'Female': {'Below Average': 20, 'Average': (21, 28), 'Above Average': 29}
-        }
-
-        if self.gender in thresholds:
-            gender_thresholds = thresholds[self.gender]
-            if self.mslb >= gender_thresholds['Above Average']:
-                return 'Above Average'
-            elif gender_thresholds['Average'][0] <= self.mslb <= gender_thresholds['Average'][1]:
-                return 'Average'
-            elif self.mslb <= gender_thresholds['Below Average']:
-                return 'Below Average'
-            else:
-                return 'Unknown'
-        else:
-            return 'Unknown'
-
-def calculate_mslb_c(row):
-    mslb_calculator = MSLBCalculator(row['Gender'], row['MSLB1'])
-    return mslb_calculator.calculate_mslb_c()
-
-class ME1Calculator(BaseVariables):
-    def __init__(self, age, gender, me1):
-        self.age = age
-        self.gender = gender
-        self.me1 = me1
-
-    def calculate_me1(self):
-        age_ranges = {
-            'Male': {
-                range(17, 20): {'Above Average': 56, 'Average': (18, 56), 'Below Average': 18},
-                range(20, 30): {'Above Average': 47, 'Average': (16, 47), 'Below Average': 16},
-                range(30, 40): {'Above Average': 41, 'Average': (12, 41), 'Below Average': 12},
-                range(40, 50): {'Above Average': 34, 'Average': (10, 34), 'Below Average': 10},
-                range(50, 60): {'Above Average': 31, 'Average': (8, 31), 'Below Average': 8},
-                range(60, 150): {'Above Average': 30, 'Average': (5, 30), 'Below Average': 5}
-            },
-            'Female': {
-                range(17, 20): {'Above Average': 30, 'Average': (6, 30), 'Below Average': 6},
-                range(20, 30): {'Above Average': 32, 'Average': (8, 32), 'Below Average': 8},
-                range(30, 40): {'Above Average': 28, 'Average': (6, 28), 'Below Average': 6},
-                range(40, 50): {'Above Average': 20, 'Average': (4, 20), 'Below Average': 4},
-                range(50, 60): {'Above Average': 16, 'Average': (3, 16), 'Below Average': 3},
-                range(60, 150): {'Above Average': 12, 'Average': (2, 12), 'Below Average': 2}
-            }
-        }
-
-        for age_range, categories in age_ranges[self.gender].items():
-            if self.age in age_range:
-                if self.me1 >= categories['Above Average']:
-                    return 'Above Average'
-                elif categories['Average'][0] <= self.me1 <= categories['Average'][1]:
-                    return 'Average'
-                elif self.me1 < categories['Below Average']:
-                    return 'Below Average'
-
-        return 'Unknown'
-
-def calculate_me1(row):
-    me1_calculator = ME1Calculator(row['Age'], row['Gender'], row['ME1'])
-    return me1_calculator.calculate_me1()
 class ME2Calculator(BaseVariables):
     def __init__(self, age, gender, me2):
         self.age = age
@@ -370,67 +423,6 @@ def calculate_me3_c(row):
     me3_calculator = ME3Calculator(row['ME3'])
     return me3_calculator.calculate_me3_c()
 
-class BL1Calculator(BaseVariables):
-    def __init__(self, bl1):
-        self.bl1 = bl1
-        self.thresholds = {
-            'Below Average': (None, 24),
-            'Average': (25, 39),
-            'Above Average': (40, None)
-        }
-
-    def calculate_bl1(self):
-        for category, (min_val, max_val) in self.thresholds.items():
-            if (min_val is None or self.bl1 >= min_val) and (max_val is None or self.bl1 <= max_val):
-                return category
-        return 'Unknown'
-
-def calculate_bl1(row):
-    bl1_calculator = BL1Calculator(row['BL1'])
-    return bl1_calculator.calculate_bl1()
-
-class BC1Calculator(BaseVariables):
-    def __init__(self, age, gender, body_fat):
-        self.age = age
-        self.gender = gender
-        self.body_fat = body_fat
-        self.thresholds = {
-            'Female': {
-                (20, 40): {'Below Average': 35, 'Average': (22, 34), 'Above Average': 21},
-                (40, 60): {'Below Average': 36, 'Average': (24, 35), 'Above Average': 23},
-                (60, 80): {'Below Average': 37, 'Average': (25, 36), 'Above Average': 24},
-            },
-            'Male': {
-                (20, 40): {'Below Average': 25, 'Average': (9, 24), 'Above Average': 8},
-                (40, 60): {'Below Average': 27, 'Average': (12, 26), 'Above Average': 11},
-                (60, 150): {'Below Average': 29, 'Average': (14, 28), 'Above Average': 13},
-            }
-        }
-
-    def calculate_bc1_c(self):
-        for age_range, categories in self.thresholds[self.gender].items():
-            if self.age in range(*age_range):
-                if isinstance(categories['Average'], int):
-                    if self.body_fat >= categories['Above Average']:
-                        return 'Above Average'
-                    elif self.body_fat <= categories['Below Average']:
-                        return 'Below Average'
-                    else:
-                        return 'Average'
-                else:
-                    min_bc1, max_bc1 = categories['Average']
-                    if min_bc1 <= self.body_fat <= max_bc1:
-                        return 'Average'
-                    elif self.body_fat > max_bc1:
-                        return 'Above Average'
-                    else:
-                        return 'Below Average'
-
-        return 'Unknown'
-
-def calculate_bc1_c(row):
-    bc1_calculator = BC1Calculator(row['Age'], row['Gender'], row['BC1'])
-    return bc1_calculator.calculate_bc1_c()
 
 class MSUB2Calculator(BaseVariables):
     def __init__(self, age, gender, msub2):
